@@ -28,10 +28,26 @@ steps:
     pip install allure-behave
   displayName: 'Install dependencies'
 
+
+- task: NodeTool@0
+  inputs:
+    versionSource: 'spec'
+    versionSpec: '18.16.1'
+
+
+- task: CmdLine@2
+  inputs:
+    script: 'npm install -g allure-commandline'
+
+
+
 - script: |
-    behave Features
-    - task: AllureGenerate@1
-      inputs:
-        resultsDir: 'Reports'
-        targetDir: 'Reports/$(Build.BuildNumber)'
-  displayName: 'behave'
+    behave -f allure_behave.formatter:AllureFormatter -o allure-results/ Features
+  displayName: Behave
+
+- task: CmdLine@2
+  inputs:
+    script: 'allure generate allure-results --clean -o allure-reports'
+- task: PublishAllureReport@1
+  inputs:
+    reportDir: 'allure-reports'
